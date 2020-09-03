@@ -88,7 +88,7 @@ REPEAT_mobilenetv2=1
 CC=gcc
 CFLAGS+=-std=c99
 CFLAGS+=-Wall
-CFLAGS+=-g3 -gdwarf -O2
+CFLAGS+=-g3 -gdwarf
 # CFLAGS+=-Werror # CI jobs run with flag enabled
 ifdef TRACE_LEVEL
 CPPFLAGS+=-D "TRACE_LEVEL=$(TRACE_LEVEL)"
@@ -109,6 +109,7 @@ SRCS+=$(foreach DIR, $(SRCDIR), $(shell find $(DIR) -type f -name '*.c'))
 SRCS+=src/inference.c
 SRCS+=src/trace.c
 SRCS+=src/utils.c
+SRCS+=src/csv.c
 OBJS=$(SRCS:%.c=$(BUILDDIR)/%.o)
 
 $(BUILDDIR)/%.o:%.c
@@ -191,6 +192,14 @@ benchmark: $(TARGET_benchmark)
 CLEAN+=clean_benchmark
 clean_benchmark:
 	rm -rf $(BENCHMARKDIR)
+
+.phony:dconnxr
+HELP_connxr=build dconnxr binary
+TARGET+=dconnxr
+ALL+=dconnxr
+dconnxr: $(BUILDDIR)/dconnxr
+$(BUILDDIR)/dconnxr: $(OBJS)
+	$(CC) -o $@ src/dconnxr.c $^ $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(LDLIBS)
 
 .phony:connxr
 HELP_connxr=build connxr binary
