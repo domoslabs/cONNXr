@@ -126,8 +126,8 @@ int main(int argc, char **argv){
   printf("Predicted in %f cycles or %f seconds\n", (double) (end - start), cpu_time_used);
 
   /* Print the last output which should be the model output */
-  for (int i = 0; i < all_context[_populatedIdx-1].outputs[0]->n_float_data; i++){
-    printf("n_float_data[%d] = %f\n", i, all_context[_populatedIdx-1].outputs[0]->float_data[i]);
+  for (int i = 0; i < all_context[_populatedIdx].outputs[0]->n_float_data; i++){
+    printf("n_float_data[%d] = %f\n", i, all_context[_populatedIdx].outputs[0]->float_data[i]);
   }
 
   if ((argc == 4) && !strcmp(argv[3], "--dump-file")){
