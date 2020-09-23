@@ -24,12 +24,16 @@ int main(int argc, char **argv){
     fprintf(stderr, "not enough arguments! %s model.onnx input.csv [--dump-file]\n", argv[0]);
     return 1;
   }
-  printf("Loading model %s...", argv[1]);
+  printf("Loading model %s...\n", argv[1]);
   Onnx__ModelProto *model = openOnnxFile(argv[1]);
-  if (model != NULL){printf("ok!\n");}
+  if (model != NULL){
+    printf("ok!\n");
+  }else{
+    printf("Failed to load model!\n");
+  }
   TRACE_MODEL(2, true, model);
 
-  printf("Loading input %s...", argv[2]);
+  printf("Loading input %s...\n", argv[2]);
   // Onnx__TensorProto *inp0set0 = openTensorProtoFile(argv[2]);
 
   Onnx__TensorProto *inp0set0 = NULL;
