@@ -69,12 +69,11 @@ int main(int argc, char **argv){
   Onnx__TensorProto *input2 = &tmp_proto;
   onnx__tensor_proto__init(input2);
 
-  input2->n_dims = 4;
-  input2->dims = malloc(4*sizeof(int64_t));
+  input2->n_dims = 3;
+  input2->dims = malloc(input2->n_dims*sizeof(int64_t));
   input2->dims[0] = 1;
-  input2->dims[1] = 1;
-  input2->dims[2] = 7;
-  input2->dims[3] = 120;
+  input2->dims[1] = 49;
+  input2->dims[2] = 120;
 
   printf("n_dims %ld \n",input2->n_dims);
   for(int i = 0; i<input2->n_dims; i++){
@@ -82,19 +81,64 @@ int main(int argc, char **argv){
   }
   printf("\n");
 
-  input2->n_float_data = 120*7;
+  int row_len = input2->dims[1];
+  int cols = input2->dims[2];
+  input2->n_float_data = cols * row_len;
   input2->float_data = malloc(sizeof(float)* input2->n_float_data);
 
-  for(int i = 0; i<120; i++){
+  for(int i = 0; i < cols; i++){
     struct brcm_csv_data *row = &test[i];
-    input2->float_data[7*i + 0] = (float)row->chanim.tx;
-    input2->float_data[7*i + 1] = (float)row->chanim.inbss;
-    input2->float_data[7*i + 2] = (float)row->chanim.obss;
-    input2->float_data[7*i + 3] = (float)row->chanim.doze;
-    input2->float_data[7*i + 4] = (float)row->chanim.txop;
-    input2->float_data[7*i + 5] = (float)row->sta_info.rate_of_last_tx_pkt[0];
-    input2->float_data[7*i + 6] = (float)row->sta_info.rx_rate;
+    input2->float_data[row_len*i + 0] = (float)row->chanim.tx;
+    input2->float_data[row_len*i + 1] = (float)row->chanim.inbss;
+    input2->float_data[row_len*i + 2] = (float)row->chanim.obss;
+    input2->float_data[row_len*i + 3] = (float)row->chanim.nocat;
+    input2->float_data[row_len*i + 4] = (float)row->chanim.nopkt;
+    input2->float_data[row_len*i + 5] = (float)row->chanim.doze;
+    input2->float_data[row_len*i + 6] = (float)row->chanim.txop;
+    input2->float_data[row_len*i + 7] = (float)row->chanim.goodtx;
+    input2->float_data[row_len*i + 8] = (float)row->chanim.badtx;
+    input2->float_data[row_len*i + 9] = (float)row->chanim.glitch;
+    input2->float_data[row_len*i + 10] = (float)row->chanim.badplcp;
+    input2->float_data[row_len*i + 11] = (float)row->chanim.knoise;
+    input2->float_data[row_len*i + 12] = (float)row->chanim.idle;
+    input2->float_data[row_len*i + 13] = (float)row->sta_info.tx_pkts;
+    input2->float_data[row_len*i + 14] = (float)row->sta_info.tx_bytes;
+    input2->float_data[row_len*i + 15] = (float)row->sta_info.tx_ucast_pkts;
+    input2->float_data[row_len*i + 16] = (float)row->sta_info.tx_ucast_bytes;
+    input2->float_data[row_len*i + 17] = (float)row->sta_info.tx_mcast_pkts;
+    input2->float_data[row_len*i + 18] = (float)row->sta_info.tx_mcast_pkts;
+    input2->float_data[row_len*i + 19] = (float)row->sta_info.tx_failures;
+    input2->float_data[row_len*i + 20] = (float)row->sta_info.rx_pkts;
+    input2->float_data[row_len*i + 21] = (float)row->sta_info.rx_bytes;
+    input2->float_data[row_len*i + 22] = (float)row->sta_info.rx_ucast_pkts;
+    input2->float_data[row_len*i + 23] = (float)row->sta_info.rx_ucast_bytes;
+    input2->float_data[row_len*i + 24] = (float)row->sta_info.rx_mcast_pkts;
+    input2->float_data[row_len*i + 25] = (float)row->sta_info.rx_mcast_bytes;
+    input2->float_data[row_len*i + 26] = (float)row->sta_info.rate_of_last_tx_pkt[0];
+    input2->float_data[row_len*i + 27] = (float)row->sta_info.rx_rate;
+    input2->float_data[row_len*i + 28] = (float)row->sta_info.rx_decrypt_succeeds;
+    input2->float_data[row_len*i + 29] = (float)row->sta_info.rx_decrypt_failures;
+    input2->float_data[row_len*i + 30] = (float)row->sta_info.tx_data_pkts_retried;
+    input2->float_data[row_len*i + 31] = (float)row->sta_info.antenna_rssi_last_rx_frame[0];
+    input2->float_data[row_len*i + 32] = (float)row->sta_info.antenna_rssi_last_rx_frame[1];
+    input2->float_data[row_len*i + 33] = (float)row->sta_info.antenna_rssi_last_rx_frame[2];
+    input2->float_data[row_len*i + 34] = (float)row->sta_info.antenna_rssi_last_rx_frame[3];
+    input2->float_data[row_len*i + 35] = (float)row->sta_info.antenna_rssi_avg[0];
+    input2->float_data[row_len*i + 36] = (float)row->sta_info.antenna_rssi_avg[0];
+    input2->float_data[row_len*i + 37] = (float)row->sta_info.antenna_rssi_avg[0];
+    input2->float_data[row_len*i + 38] = (float)row->sta_info.antenna_rssi_avg[0];
+    input2->float_data[row_len*i + 39] = (float)row->sta_info.antenna_noise_floor[0];
+    input2->float_data[row_len*i + 40] = (float)row->sta_info.antenna_noise_floor[0];
+    input2->float_data[row_len*i + 41] = (float)row->sta_info.antenna_noise_floor[0];
+    input2->float_data[row_len*i + 42] = (float)row->sta_info.antenna_noise_floor[0];
+    input2->float_data[row_len*i + 43] = (float)row->sta_info.tx_retries;
+    input2->float_data[row_len*i + 44] = (float)row->sta_info.tx_pkts_retry_exhausted;
+    input2->float_data[row_len*i + 45] = (float)row->sta_info.tx_fw_total_pkts_sent;
+    input2->float_data[row_len*i + 46] = (float)row->sta_info.tx_fw_pkts_retries;
+    input2->float_data[row_len*i + 47] = (float)row->sta_info.tx_fw_pkts_retry_exhausted;
+    input2->float_data[row_len*i + 48] = (float)row->sta_info.rx_retries;
   }
+
   input2->data_type = ONNX__TENSOR_PROTO__DATA_TYPE__FLOAT;
   inp0set0 = input2;
 
