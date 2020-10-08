@@ -29,7 +29,8 @@ int main(int argc, char **argv){
   if (model != NULL){
     printf("ok!\n");
   }else{
-    printf("Failed to load model!\n");
+    fprintf(stderr, "Failed to load model!\n");
+    return 1;
   }
   TRACE_MODEL(2, true, model);
 
@@ -39,7 +40,11 @@ int main(int argc, char **argv){
   Onnx__TensorProto *inp0set0 = NULL;
 
   FILE *csv = fopen(argv[2],"r");
-
+  if (csv==NULL) {
+    fprintf(stderr, "Failed to open csv file %s\n", argv[2]);
+    return 1;
+  }
+  
   char static_fpingdq_splited_header[MAX_FIELDS][MAX_FIELD_LEN] = {0};
   char *fpingdq_splited_header[MAX_FIELDS];
   char static_tmp_splited_csv[MAX_FIELDS][MAX_FIELD_LEN] = {0};
