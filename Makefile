@@ -97,6 +97,7 @@ endif
 LDFLAGS+=-g
 LDLIBS+=-lcunit
 LDLIBS+=-lm
+LDLIBS+=-ljson-c
 
 INCDIR+=include
 INCDIR+=src
@@ -110,6 +111,7 @@ SRCS+=src/inference.c
 SRCS+=src/trace.c
 SRCS+=src/utils.c
 SRCS+=src/csv.c
+SRCS+=src/commandline-options.c
 OBJS=$(SRCS:%.c=$(BUILDDIR)/%.o)
 
 $(BUILDDIR)/%.o:%.c
