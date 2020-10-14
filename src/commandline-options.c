@@ -9,9 +9,9 @@ void print_usage(){
     printf("Usage: dconnxr [options]\n");
     printf("\n");
     printf("options:\n");
-    printf("    -s  Model input Settings json file\n");
+    printf("    -s  ONNX model config file\n");
     printf("    -c  CSV file\n");
-    // printf("    -m  ONNX model file\n");
+    printf("    -m  macaddress\n");
     printf("    -h  print this\n");
 }
 
@@ -26,9 +26,9 @@ int parse_options(cmdoptions *cmdopts, int argc, char *argv[])
         case 's':
             strncpy(cmdopts->input_settings_json_file, optarg, sizeof(cmdopts->input_settings_json_file));
             break;
-        // case 'm':
-        //     strncpy(cmdopts->model_file, optarg, sizeof(cmdopts->model_file));
-        //     break;
+        case 'm':
+            strncpy(cmdopts->mac, optarg, sizeof(cmdopts->mac));
+            break;
         case 'h':
         default:
             print_usage();

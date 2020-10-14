@@ -141,12 +141,25 @@ int main(int argc, char **argv){
   int counter = 0;
   int buff_len = 1024;
   char buffer[buff_len];
+  int index_of_mac=0;
   while(fgets(buffer, buff_len, csv)) {
     if(counter == 0) {
       header_fields = csv_split_line(buffer, fpingdq_splitted_header, MAX_FIELDS);
+      index_of_mac = csv_get_index_from_field_name(fpingdq_splitted_header, header_fields, "mac");
+      counter++;
+      if(counter > cols){
+        break;
+    }
     } else {
       int csvlen = csv_split_line(buffer,tmp_splitted_csv,MAX_FIELDS);
       //brcm_csv_to_structs(fpingdq_splitted_header,header_fields,tmp_splitted_csv,csvlen,&test[counter-1]);
+      if (strlen(opts.mac)>0) {
+        //printf("csv line has mac %s\nopts.mac =       %s\n", tmp_splitted_csv[index_of_mac], opts.mac);
+        if (strcasecmp(opts.mac, tmp_splitted_csv[index_of_mac])!=0) {
+          //printf("mac not match\n");
+          continue;
+        }
+      }
       csv_to_model_vector(
         fpingdq_splitted_header, header_fields,
         feature_field_names, feature_fields,
@@ -154,10 +167,10 @@ int main(int argc, char **argv){
         &(input2->float_data[row_len*(counter-1) + 0])
       );
       // &(input2->float_data[row_len*colidx + 0]) = (float)row->chanim.tx;
-    }
-    counter++;
-    if(counter > cols) {
-      break;
+      counter++;
+      if(counter > cols){
+        break;
+      }
     }
   }
   fclose(csv);

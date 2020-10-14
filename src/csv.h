@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <inttypes.h>
 
-#define MAX_FIELD_LEN 64
+#define MAX_FIELD_LEN 128
 #define MAX_FIELDS 128
 
 
