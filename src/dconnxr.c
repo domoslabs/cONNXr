@@ -15,7 +15,6 @@
 
 // build/connxr test/broadcom_small.onnx test/domos/broadcom_small_input.pb
 int main(int argc, char **argv){
-
   /* TODO: Number of inputs is hardcoded to 1. The CLI is used with
   two parameters:
     - ONNX model to use
@@ -66,12 +65,13 @@ int main(int argc, char **argv){
   onnx__tensor_proto__init(input2);
   input2->n_dims = dimensions; // 3 dimensions
   input2->dims = malloc(input2->n_dims*sizeof(int64_t));
-  for(int i=0; i<dimensions; i++)
+  for(int i=0; i<dimensions; i++) {
     input2->dims[i] = json_object_get_int64(json_object_array_get_idx(jarray,i));
+  }
 
   printf("n_dims %ld \n",input2->n_dims);
   for(int i = 0; i<input2->n_dims; i++){
-    printf(" %ld ",input2->dims[i]);
+    printf(" %"PRId64" ", input2->dims[i]);
   }
   printf("\n");
 
@@ -130,8 +130,8 @@ int main(int argc, char **argv){
   json_object_put(settings_jobj);
 
   // copy data from csv into input->float data.
-  int row_len = input2->dims[1];
-  int cols = input2->dims[2];
+  int row_len = (int)(input2->dims[1]);
+  int cols = (int)(input2->dims[2]);
   input2->n_float_data = cols * row_len;
   input2->float_data = malloc(sizeof(float)* input2->n_float_data);
 
