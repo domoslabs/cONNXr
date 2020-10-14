@@ -66,6 +66,7 @@ int csv_get_string_from_name(char **header_fields, int num_fields, char *field_n
 
 float csv_get_float_from_name(char **header_fields, int num_fields, char *field_name, char ** splited_csv, int csv_len)
 {
+    //printf("%s: header_fields 0/%d: %s - splited_csv 0/%d: %s\n", __func__, num_fields, header_fields[0], csv_len, splited_csv[0]);
     int idx = csv_get_index_from_field_name(header_fields,num_fields,field_name);
     if(idx != -1) {
         char *field_value = splited_csv[idx];
@@ -93,6 +94,21 @@ int csv_get_int_from_name_helper(char **header_fields, int num_fields, char *fie
         }
     }
     return 0;
+}
+
+void csv_to_model_vector(
+        char **header_fields,  int num_header_fields,
+        char **feature_fields, int num_feature_fields,
+        char **splitted_csv,   int csv_len,
+        float *floatdata
+)
+{
+    for(int i = 0; i < num_feature_fields; i++) {
+        //printf("%s: i=%d, %s/%d, %s/%d\n", __func__, i, header_fields[i], num_header_fields, feature_fields[i], num_feature_fields);
+        floatdata[i] = csv_get_float_from_name(
+            header_fields, num_header_fields, feature_fields[i],
+            splitted_csv, csv_len);
+    }
 }
 
 void brcm_csv_to_structs(char **header_fields, int num_fields, char ** splitted_csv, int csv_len, struct brcm_csv_data *data_out)

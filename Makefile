@@ -95,7 +95,7 @@ CPPFLAGS+=-D "TRACE_LEVEL=$(TRACE_LEVEL)"
 endif
 
 LDFLAGS+=-g
-LDLIBS+=-lcunit
+#LDLIBS+=-lcunit
 LDLIBS+=-lm
 LDLIBS+=-ljson-c
 
@@ -124,7 +124,7 @@ DEFAULT=help
 
 .phony: runtest
 HELP_runtest=build runtest binary
-ALL+=runtest
+#ALL+=runtest
 TARGET+=runtest
 runtest: $(BUILDDIR)/runtest
 $(BUILDDIR)/runtest: $(OBJS)

@@ -95,5 +95,11 @@ int csv_get_int_from_name_helper(char **header_fields, int num_fields, char *fie
 int csv_get_int_from_name(char **header_fields, int num_fields, char *field_name, char ** splited_csv, int csv_len);
 int csv_get_line_from_idexes(char * line, int * indexes, int indexes_len, char * tmp_splited_csv[MAX_FIELDS], char *out);
 void brcm_csv_to_structs(char **header_fields, int num_fields, char ** splitted_csv, int csv_len, struct brcm_csv_data *data_out);
+void csv_to_model_vector(
+        char **header_fields,  int num_header_fields,
+        char **feature_fields, int num_feature_fields,
+        char **splitted_csv,   int csv_len,
+        float *floatdata
+);
 
 #endif // __UTILS_H

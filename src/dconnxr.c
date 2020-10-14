@@ -69,10 +69,14 @@ int main(int argc, char **argv){
   for(int i=0; i<dimensions; i++)
     input2->dims[i] = json_object_get_int64(json_object_array_get_idx(jarray,i));
 
+  printf("n_dims %ld \n",input2->n_dims);
+  for(int i = 0; i<input2->n_dims; i++){
+    printf(" %ld ",input2->dims[i]);
+  }
+  printf("\n");
+
   strcpy(opts.model_file, json_object_get_string(jobj));
   printf("object file from json is %s\n", opts.model_file);
-  json_object_put(settings_jobj);
-
 
   printf("Loading model %s...\n", opts.model_file);
   Onnx__ModelProto *model = openOnnxFile(opts.model_file);
@@ -95,100 +99,84 @@ int main(int argc, char **argv){
     return 1;
   }
   
-  char static_fpingdq_splited_header[MAX_FIELDS][MAX_FIELD_LEN] = {0};
-  char *fpingdq_splited_header[MAX_FIELDS];
-  char static_tmp_splited_csv[MAX_FIELDS][MAX_FIELD_LEN] = {0};
-  char *tmp_splited_csv[MAX_FIELDS];
+  // prepare 2D array
+  char static_fpingdq_splitted_header[MAX_FIELDS][MAX_FIELD_LEN] = {0};
+  char *fpingdq_splitted_header[MAX_FIELDS];
+  char static_tmp_splitted_csv[MAX_FIELDS][MAX_FIELD_LEN] = {0};
+  char *tmp_splitted_csv[MAX_FIELDS];
+  char static_feature_field_names[MAX_FIELDS][MAX_FIELD_LEN] = {0};
+  char *feature_field_names[MAX_FIELDS];
 
   for(int i = 0; i < MAX_FIELDS; i++){
-    tmp_splited_csv[i] = static_tmp_splited_csv[i];
-    fpingdq_splited_header[i] = static_fpingdq_splited_header[i];
+    tmp_splitted_csv[i] = static_tmp_splitted_csv[i];
+    fpingdq_splitted_header[i] = static_fpingdq_splitted_header[i];
+    feature_field_names[i] = static_feature_field_names[i];
   }
 
-  int header_fields = 0;
-  struct brcm_csv_data test[120];
-  int counter = 0;
-  int buff_len = 1024;
-  char buffer[buff_len];
-  while(fgets(buffer, buff_len, csv)) {
-    if(counter == 0) {
-      header_fields = csv_split_line(buffer, fpingdq_splited_header, MAX_FIELDS);
-    } else {
-      int csvlen = csv_split_line(buffer,tmp_splited_csv,MAX_FIELDS);
-      brcm_csv_to_structs(fpingdq_splited_header,header_fields,tmp_splited_csv,csvlen,&test[counter-1]);
-    }
-    counter++;
-    if(counter > 120) {
-      break;
-    }
+  // extract  model features field names and
+  if(!json_object_object_get_ex(settings_jobj, "Features", &jarray)) {
+    fprintf(stderr, "failed to find Features array in json\n");
+    return 1;
   }
-  fclose(csv);
-
-
-
-  printf("n_dims %ld \n",input2->n_dims);
-  for(int i = 0; i<input2->n_dims; i++){
-    printf(" %ld ",input2->dims[i]);
+  int feature_fields = json_object_array_length(jarray);
+  if (feature_fields!=(int)(input2->dims[1])) {
+    fprintf(stderr, "feature fields array length %d does not match dimensions %"PRId64"\n", feature_fields, input2->dims[1]);
+    return 1;
   }
-  printf("\n");
+  for(int i = 0; i < feature_fields; i++){
+    strncpy(feature_field_names[i],
+    json_object_get_string(json_object_array_get_idx(jarray,i)), MAX_FIELDS);
+  }
+  json_object_put(settings_jobj);
 
+  // copy data from csv into input->float data.
   int row_len = input2->dims[1];
   int cols = input2->dims[2];
   input2->n_float_data = cols * row_len;
   input2->float_data = malloc(sizeof(float)* input2->n_float_data);
 
-  for(int i = 0; i < cols; i++){
-    struct brcm_csv_data *row = &test[i];
-    input2->float_data[row_len*i + 0] = (float)row->chanim.tx;
-    input2->float_data[row_len*i + 1] = (float)row->chanim.inbss;
-    input2->float_data[row_len*i + 2] = (float)row->chanim.obss;
-    input2->float_data[row_len*i + 3] = (float)row->chanim.nocat;
-    input2->float_data[row_len*i + 4] = (float)row->chanim.nopkt;
-    input2->float_data[row_len*i + 5] = (float)row->chanim.doze;
-    input2->float_data[row_len*i + 6] = (float)row->chanim.txop;
-    input2->float_data[row_len*i + 7] = (float)row->chanim.goodtx;
-    input2->float_data[row_len*i + 8] = (float)row->chanim.badtx;
-    input2->float_data[row_len*i + 9] = (float)row->chanim.glitch;
-    input2->float_data[row_len*i + 10] = (float)row->chanim.badplcp;
-    input2->float_data[row_len*i + 11] = (float)row->chanim.knoise;
-    input2->float_data[row_len*i + 12] = (float)row->chanim.idle;
-    input2->float_data[row_len*i + 13] = (float)row->sta_info.tx_pkts;
-    input2->float_data[row_len*i + 14] = (float)row->sta_info.tx_bytes;
-    input2->float_data[row_len*i + 15] = (float)row->sta_info.tx_ucast_pkts;
-    input2->float_data[row_len*i + 16] = (float)row->sta_info.tx_ucast_bytes;
-    input2->float_data[row_len*i + 17] = (float)row->sta_info.tx_mcast_pkts;
-    input2->float_data[row_len*i + 18] = (float)row->sta_info.tx_mcast_pkts;
-    input2->float_data[row_len*i + 19] = (float)row->sta_info.tx_failures;
-    input2->float_data[row_len*i + 20] = (float)row->sta_info.rx_pkts;
-    input2->float_data[row_len*i + 21] = (float)row->sta_info.rx_bytes;
-    input2->float_data[row_len*i + 22] = (float)row->sta_info.rx_ucast_pkts;
-    input2->float_data[row_len*i + 23] = (float)row->sta_info.rx_ucast_bytes;
-    input2->float_data[row_len*i + 24] = (float)row->sta_info.rx_mcast_pkts;
-    input2->float_data[row_len*i + 25] = (float)row->sta_info.rx_mcast_bytes;
-    input2->float_data[row_len*i + 26] = (float)row->sta_info.rate_of_last_tx_pkt[0];
-    input2->float_data[row_len*i + 27] = (float)row->sta_info.rx_rate;
-    input2->float_data[row_len*i + 28] = (float)row->sta_info.rx_decrypt_succeeds;
-    input2->float_data[row_len*i + 29] = (float)row->sta_info.rx_decrypt_failures;
-    input2->float_data[row_len*i + 30] = (float)row->sta_info.tx_data_pkts_retried;
-    input2->float_data[row_len*i + 31] = (float)row->sta_info.antenna_rssi_last_rx_frame[0];
-    input2->float_data[row_len*i + 32] = (float)row->sta_info.antenna_rssi_last_rx_frame[1];
-    input2->float_data[row_len*i + 33] = (float)row->sta_info.antenna_rssi_last_rx_frame[2];
-    input2->float_data[row_len*i + 34] = (float)row->sta_info.antenna_rssi_last_rx_frame[3];
-    input2->float_data[row_len*i + 35] = (float)row->sta_info.antenna_rssi_avg[0];
-    input2->float_data[row_len*i + 36] = (float)row->sta_info.antenna_rssi_avg[0];
-    input2->float_data[row_len*i + 37] = (float)row->sta_info.antenna_rssi_avg[0];
-    input2->float_data[row_len*i + 38] = (float)row->sta_info.antenna_rssi_avg[0];
-    input2->float_data[row_len*i + 39] = (float)row->sta_info.antenna_noise_floor[0];
-    input2->float_data[row_len*i + 40] = (float)row->sta_info.antenna_noise_floor[0];
-    input2->float_data[row_len*i + 41] = (float)row->sta_info.antenna_noise_floor[0];
-    input2->float_data[row_len*i + 42] = (float)row->sta_info.antenna_noise_floor[0];
-    input2->float_data[row_len*i + 43] = (float)row->sta_info.tx_retries;
-    input2->float_data[row_len*i + 44] = (float)row->sta_info.tx_pkts_retry_exhausted;
-    input2->float_data[row_len*i + 45] = (float)row->sta_info.tx_fw_total_pkts_sent;
-    input2->float_data[row_len*i + 46] = (float)row->sta_info.tx_fw_pkts_retries;
-    input2->float_data[row_len*i + 47] = (float)row->sta_info.tx_fw_pkts_retry_exhausted;
-    input2->float_data[row_len*i + 48] = (float)row->sta_info.rx_retries;
+  //int colidx = 0; // column index of float_data
+  int header_fields = 0;
+  //struct brcm_csv_data test[120];
+  int counter = 0;
+  int buff_len = 1024;
+  char buffer[buff_len];
+  while(fgets(buffer, buff_len, csv)) {
+    if(counter == 0) {
+      header_fields = csv_split_line(buffer, fpingdq_splitted_header, MAX_FIELDS);
+    } else {
+      int csvlen = csv_split_line(buffer,tmp_splitted_csv,MAX_FIELDS);
+      //brcm_csv_to_structs(fpingdq_splitted_header,header_fields,tmp_splitted_csv,csvlen,&test[counter-1]);
+      csv_to_model_vector(
+        fpingdq_splitted_header, header_fields,
+        feature_field_names, feature_fields,
+        tmp_splitted_csv, csvlen,
+        &(input2->float_data[row_len*(counter-1) + 0])
+      );
+      // &(input2->float_data[row_len*colidx + 0]) = (float)row->chanim.tx;
+    }
+    counter++;
+    if(counter > cols) {
+      break;
+    }
   }
+  fclose(csv);
+
+  // print first and second row...
+  for (int i = 0; i < row_len; i++)
+    printf(" %02f", input2->float_data[row_len*0 + i]);
+  printf("\n");
+  for (int i = 0; i < row_len; i++)
+    printf(" %2f", input2->float_data[row_len*1 + i]);
+  
+  printf("\n");
+
+  if (counter<cols) {
+    fprintf(stderr, "not enough lines in the csv file\n");
+    return 1;
+  }
+
+    // input2->float_data[row_len*i + 48] = (float)row->sta_info.rx_retries;
 
   input2->data_type = ONNX__TENSOR_PROTO__DATA_TYPE__FLOAT;
   inp0set0 = input2;
