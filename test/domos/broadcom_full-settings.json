@@ -1,5 +1,5 @@
 {
- "ModelFileName":"test/domos/broadcom_full.onnx",
+ "ModelFileName":"broadcom_full.onnx",
  "Dimensions":[1,49,25],
  "Features": ["tx","inbss","obss","nocat","nopkt","doze","txop","goodtx","badtx","glitch","badplcp","knoise","idle","tx_total_pkts","tx_total_bytes","tx_ucast_pkts","tx_ucast_bytes","tx_mcast/bcast_pkts","tx_mcast/bcast_bytes","tx_failures","rx_data_pkts","rx_data_bytes","rx_ucast_pkts","rx_ucast_bytes","rx_mcast/bcast_pkts","rx_mcast/bcast_bytes","rate_of_last_tx_pkt","rate_of_last_rx_pkt","rx_decrypt_succeeds","rx_decrypt_failures","tx_data_pkts_retried","rx_last_rssi_1","rx_last_rssi_2","rx_last_rssi_3","rx_last_rssi_4","rx_average_rssi_1","rx_average_rssi_2","rx_average_rssi_3","rx_average_rssi_4","noise_floor_1","noise_floor_2","noise_floor_3","_noise_floor_4","tx_pkts_retries","tx_pkts_retry_exhausted","tx_FW_total_pkts_sent","tx_FW_pkts_retries","tx_FW_pkts_retry_exhausted","rx_total_pkts_retried"]
 }

@@ -2,8 +2,9 @@
 #define COMMANDLINE_OPTIONS_H
 
 typedef struct {
-    char model_file[128];
-    char input_settings_json_file[128];
+    char path[128];
+    char model_filename[128];
+    char model_config_filename[128];
     char csv_file[128];
     char mac[128];
 } cmdoptions;

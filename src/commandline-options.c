@@ -9,8 +9,9 @@ void print_usage(){
     printf("Usage: dconnxr [options]\n");
     printf("\n");
     printf("options:\n");
-    printf("    -s  ONNX model config file\n");
-    printf("    -c  CSV file\n");
+    printf("    -d  Path to config and ONNX model\n");
+    printf("    -s  ONNX model config filename\n");
+    printf("    -c  CSV file path\n");
     printf("    -m  macaddress\n");
     printf("    -h  print this\n");
 }
@@ -18,13 +19,20 @@ void print_usage(){
 int parse_options(cmdoptions *cmdopts, int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "c:s:m:h")) != -1) {
+    while ((opt = getopt(argc, argv, "d:c:s:m:h")) != -1) {
         switch (opt) {
+        case 'd':
+            strncpy(cmdopts->path, optarg, sizeof(cmdopts->path));
+            int len = strlen(cmdopts->path);
+            if (len>0)
+                if (cmdopts->path[len-1]=='/')
+                    cmdopts->path[len-1]=0; // remove trailing slash
+            break;
         case 'c':
             strncpy(cmdopts->csv_file, optarg, sizeof(cmdopts->csv_file));
             break;
         case 's':
-            strncpy(cmdopts->input_settings_json_file, optarg, sizeof(cmdopts->input_settings_json_file));
+            strncpy(cmdopts->model_config_filename, optarg, sizeof(cmdopts->model_config_filename));
             break;
         case 'm':
             strncpy(cmdopts->mac, optarg, sizeof(cmdopts->mac));

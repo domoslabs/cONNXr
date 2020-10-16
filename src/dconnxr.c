@@ -15,6 +15,7 @@
 
 // build/connxr test/broadcom_small.onnx test/domos/broadcom_small_input.pb
 int main(int argc, char **argv){
+  char fullpath[128]={0};
   /* TODO: Number of inputs is hardcoded to 1. The CLI is used with
   two parameters:
     - ONNX model to use
@@ -41,9 +42,10 @@ int main(int argc, char **argv){
 */
 
   printf("Parsing model settings json...\n");
-  json_object *settings_jobj = json_object_from_file(opts.input_settings_json_file);
+  sprintf(fullpath, "%s/%s", opts.path, opts.model_config_filename);
+  json_object *settings_jobj = json_object_from_file(fullpath);
   if (!settings_jobj) {
-    fprintf(stderr, "failed to parse or load input settings json file\n");
+    fprintf(stderr, "failed to parse or load input settings json file %s\n", fullpath);
     return 1;
   }
 
@@ -52,7 +54,7 @@ int main(int argc, char **argv){
     fprintf(stderr, "failed to find ModelFileName in json\n");
     return 1;
   }
-  strcpy(opts.model_file, json_object_get_string(jobj));
+  strcpy(opts.model_filename, json_object_get_string(jobj));
 
   json_object *jarray;
   if(!json_object_object_get_ex(settings_jobj, "Dimensions", &jarray)) {
@@ -75,11 +77,13 @@ int main(int argc, char **argv){
   }
   printf("\n");
 
-  strcpy(opts.model_file, json_object_get_string(jobj));
-  printf("object file from json is %s\n", opts.model_file);
+  strcpy(opts.model_filename, json_object_get_string(jobj));
 
-  printf("Loading model %s...\n", opts.model_file);
-  Onnx__ModelProto *model = openOnnxFile(opts.model_file);
+  sprintf(fullpath, "%s/%s", opts.path, opts.model_filename);
+  printf("object file from json is %s\n", fullpath);
+
+  printf("Loading model %s...\n", fullpath);
+  Onnx__ModelProto *model = openOnnxFile(fullpath);
   if (model != NULL){
     printf("ok!\n");
   }else{
