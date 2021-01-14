@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <time.h>
 
 #include "onnx.pb-c.h"
@@ -41,8 +42,8 @@ int main(int argc, char **argv){
 }
 */
 
-  printf("Parsing model settings json...\n");
   sprintf(fullpath, "%s/%s", opts.path, opts.model_config_filename);
+  printf("Parsing %s...\n",fullpath);
   json_object *settings_jobj = json_object_from_file(fullpath);
   if (!settings_jobj) {
     fprintf(stderr, "failed to parse or load input settings json file %s\n", fullpath);
@@ -71,7 +72,7 @@ int main(int argc, char **argv){
     input2->dims[i] = json_object_get_int64(json_object_array_get_idx(jarray,i));
   }
 
-  printf("n_dims %ld \n",input2->n_dims);
+  printf("n_dims %u \n",input2->n_dims);
   for(int i = 0; i<input2->n_dims; i++){
     printf(" %"PRId64" ", input2->dims[i]);
   }
@@ -127,10 +128,13 @@ int main(int argc, char **argv){
     fprintf(stderr, "feature fields array length %d does not match dimensions %"PRId64"\n", feature_fields, input2->dims[1]);
     return 1;
   }
+  printf("Features: [");
   for(int i = 0; i < feature_fields; i++){
     strncpy(feature_field_names[i],
     json_object_get_string(json_object_array_get_idx(jarray,i)), MAX_FIELDS);
+    printf("%s,",feature_field_names[i]);
   }
+  printf("]\n");
   json_object_put(settings_jobj);
 
   // copy data from csv into input->float data.
@@ -139,6 +143,7 @@ int main(int argc, char **argv){
   input2->n_float_data = cols * row_len;
   input2->float_data = malloc(sizeof(float)* input2->n_float_data);
 
+  printf("Searching for %s in csv\n",opts.mac);
   //int colidx = 0; // column index of float_data
   int header_fields = 0;
   //struct brcm_csv_data test[120];
@@ -160,7 +165,7 @@ int main(int argc, char **argv){
       if (strlen(opts.mac)>0) {
         //printf("csv line has mac %s\nopts.mac =       %s\n", tmp_splitted_csv[index_of_mac], opts.mac);
         if (strcasecmp(opts.mac, tmp_splitted_csv[index_of_mac])!=0) {
-          //printf("mac not match\n");
+          // printf("mac not match %s, %s\n",opts.mac,tmp_splitted_csv[index_of_mac]);
           continue;
         }
       }
