@@ -148,24 +148,26 @@ int main(int argc, char **argv){
   int header_fields = 0;
   //struct brcm_csv_data test[120];
   int counter = 0;
-  int buff_len = 1024;
+  int buff_len = 4096;
   char buffer[buff_len];
   int index_of_mac=0;
   while(fgets(buffer, buff_len, csv)) {
     if(counter == 0) {
       header_fields = csv_split_line(buffer, fpingdq_splitted_header, MAX_FIELDS);
+      printf("Found %d header fields\n", header_fields);
       index_of_mac = csv_get_index_from_field_name(fpingdq_splitted_header, header_fields, "mac");
+      printf("Index of mac field %d\n", index_of_mac);
       counter++;
       if(counter > cols){
         break;
     }
     } else {
-      int csvlen = csv_split_line(buffer,tmp_splitted_csv,MAX_FIELDS);
+      int csvlen = csv_split_line(buffer, tmp_splitted_csv ,MAX_FIELDS);
       //brcm_csv_to_structs(fpingdq_splitted_header,header_fields,tmp_splitted_csv,csvlen,&test[counter-1]);
       if (strlen(opts.mac)>0) {
-        //printf("csv line has mac %s\nopts.mac =       %s\n", tmp_splitted_csv[index_of_mac], opts.mac);
+        // printf("csv line has mac (%s)\nopts.mac = (%s)\n", tmp_splitted_csv[index_of_mac], opts.mac);
         if (strcasecmp(opts.mac, tmp_splitted_csv[index_of_mac])!=0) {
-          // printf("mac not match %s, %s\n",opts.mac,tmp_splitted_csv[index_of_mac]);
+          // printf("mac not match (%s), (%s)\n",opts.mac, tmp_splitted_csv[index_of_mac]);
           continue;
         }
       }
@@ -184,6 +186,7 @@ int main(int argc, char **argv){
   }
   fclose(csv);
 
+  printf("first and second row of input:\n");
   // print first and second row...
   for (int i = 0; i < row_len; i++)
     printf(" %02f", input2->float_data[row_len*0 + i]);

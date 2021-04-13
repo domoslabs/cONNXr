@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include <inttypes.h>
 
-#define MAX_FIELD_LEN 128
-#define MAX_FIELDS 128
+#define MAX_FIELD_LEN 256
+#define MAX_FIELDS 256
 
 
 struct fpingdq_ping

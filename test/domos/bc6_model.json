@@ -1,0 +1,5 @@
+{
+    "ModelFileName":"bc6_test.onnx",
+    "Dimensions":[1,9,25],
+    "Features": ["tx", "rx" ,"rx_bss", "busy","tx_bytes", "rx_bytes", "rx_rate_RSSI_of_received_signal", "rx_stats_Rx_Decryption_Errors", "noise"]
+}
