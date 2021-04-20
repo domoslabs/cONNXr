@@ -85,7 +85,7 @@ SRCS+=src/trace.c
 SRCS+=src/utils.c
 SRCS+=src/csv.c
 SRCS+=src/commandline-options.c
-SRCS+=src/test/test_utils.c
+# SRCS+=src/test/test_utils.c
 OBJS=$(SRCS:%.c=$(BUILDDIR)/%.o)
 
 $(BUILDDIR)/%.o:%.c
@@ -96,13 +96,14 @@ $(BINARY): $(OBJS)
 
 DEFAULT=help
 
-.phony: runtest
-HELP_runtest=build runtest binary
-#ALL+=runtest
-TARGET+=runtest
-runtest: $(BUILDDIR)/runtest
-$(BUILDDIR)/runtest: $(OBJS)
-	$(CC) -o $@ src/test/tests.c $^ $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(LDLIBS)
+# .phony: runtest
+# HELP_runtest=build runtest binary
+# #ALL+=runtest
+# TARGET+=runtest
+# runtest: $(BUILDDIR)/runtest
+# $(BUILDDIR)/runtest: $(OBJS)
+# 	$(CC) -o $@ src/test/tests.c $^ $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(LDLIBS)
+
 # TODO: Define new objects that are compiled with -fic?
 .phony: sharedlib
 HELP_sharedlib=build sharedlib binary
@@ -119,33 +120,33 @@ clean_build:
 	rm -rf $(BUILDDIR)
 
 # C unit tests, not related to models and operators
-.phony: unittests
-HELP_unittests=Build and run unit tests that are not related to models or operators
-ALL+=unittests
-TARGET+=unittests
-unittests: $(BUILDDIR)/unittests
-$(BUILDDIR)/unittests: $(OBJS)
-	$(CC) -o $@ src/test/tests.c $^ $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(LDLIBS)
-	$(BUILDDIR)/unittests 
+# .phony: unittests
+# HELP_unittests=Build and run unit tests that are not related to models or operators
+# ALL+=unittests
+# TARGET+=unittests
+# unittests: $(BUILDDIR)/unittests
+# $(BUILDDIR)/unittests: $(OBJS)
+# 	$(CC) -o $@ src/test/tests.c $^ $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(LDLIBS)
+# 	$(BUILDDIR)/unittests 
 
 # Operator tests
-.phony:test_operators
-HELP_test_operators=run onnx backend operator tests
-TARGET_test+=test_operators
-test_operators: sharedlib
-	python tests/test_operators.py
+# .phony:test_operators
+# HELP_test_operators=run onnx backend operator tests
+# TARGET_test+=test_operators
+# test_operators: sharedlib
+# 	python tests/test_operators.py
 
-# Model tests
-.phony:test_models
-HELP_test_models=run model tests
-TARGET_test+=test_models
-test_models: sharedlib
-	python tests/test_models.py
+# # Model tests
+# .phony:test_models
+# HELP_test_models=run model tests
+# TARGET_test+=test_models
+# test_models: sharedlib
+# 	python tests/test_models.py
 
-.phony: test
-HELP_test=run tests
-TARGET+=test
-test: $(TARGET_test)
+# .phony: test
+# HELP_test=run tests
+# TARGET+=test
+# test: $(TARGET_test)
 
 .phony:benchmark
 HELP_benchmark=run benchmarks of all MODELS
