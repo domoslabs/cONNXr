@@ -1,0 +1,6 @@
+{
+  "ModelFileName": "broadcom_small.onnx",
+  "Dimensions": [ 1, 9, 50 ],
+  "Features": [ "tx","inbss","obss","txop","tx_total_bytes","rx_data_bytes","rx_last_rssi_1","rx_average_rssi_1","noise_floor_1"]
+}
+
