@@ -363,6 +363,20 @@ class OnnxAttribute():
         "GRAPHS"         : "ONNX__ATTRIBUTE_PROTO__ATTRIBUTE_TYPE__GRAPHS",
         "SPARSE_TENSORS" : "ONNX__ATTRIBUTE_PROTO__ATTRIBUTE_TYPE__SPARSE_TENSORS",
     }
+    _onnxAttributeDataTypeCDecl = {
+        "FLOAT"          : [("f","float","{name}")],
+        "INT"            : [("i","int64_t","{name}")],
+        "STRING"         : [("s","char*","{name}")],
+        "TENSOR"         : [("t","Onnx__TensorProto*","{name}")],
+        "GRAPH"          : [("g","Onnx__GraphProto*","{name}")],
+        "SPARSE_TENSOR"  : [("sparse_tensor","Onnx__SparseTensorProto*","{name}")],
+        "FLOATS"         : [("n_floats","size_t","n_{name}"),("floats","float*","{name}")],
+        "INTS"           : [("n_ints","size_t","n_{name}"),("ints","int64_t*","{name}")],
+        "STRINGS"        : [("n_strings","size_t","n_{name}"),("strings","char**","{name}")],
+        "TENSORS"        : [("n_tensors","size_t","n_{name}"),("tensors","Onnx__TensorProto**","{name}")],
+        "GRAPHS"         : [("n_graphs","size_t","n_{name}"),("graphs","Onnx__GraphProto**","{name}")],
+        "SPARSE_TENSORS" : [("n_sparse_tensors","size_t","n_{name}"),("sparse_tensors","Onnx__SparseTensorProto**","{name}")],
+    }
 
     def __init__(self, name, attribute):
         self.name = name
@@ -371,7 +385,7 @@ class OnnxAttribute():
             self.type = attribute['type']
             self.description = attribute['description']
         else:
-            self.optional = attribute.required
+            self.optional = not attribute.required
             self.type = attribute.type.name
             self.description = attribute.description
 
@@ -383,6 +397,12 @@ class OnnxAttribute():
 
     def onnxAttributeDataType(self):
         return self._onnxAttributeDataType[self.type]
+
+    def onnxAttributeDataTypeCDecl(self):
+        result = []
+        for decls in self._onnxAttributeDataTypeCDecl[self.type]:
+            result.append((s.format(name = self.name) for s in decls ))
+        return result
 
     def __repr__(self):
         attribute = self.__dict__.copy()
@@ -552,9 +572,13 @@ class OnnxSchema():
     def __repr__(self):
       return f"OnnxSchema({self.__dict__.__repr__()})"
 
-    def _operator_name(self, schema):
-        name = f"operator__{self._domain(schema)}__{schema.name}__{schema.since_version}"
-        return re.sub(r"\W", "_", name).lower()
+    def _operator_name(self, schema, name=True, version=True):
+        opname = f"operator__{self._domain(schema)}"
+        if name:
+            opname += f"__{schema.name}"
+        if version:
+            opname += f"__{schema.since_version}"
+        return re.sub(r"\W", "_", opname).lower()
 
     def _domain(self, schema):
         domain = "ai.onnx"

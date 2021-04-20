@@ -73,7 +73,7 @@ _TRACE_EXIT(LEVEL);
  *  ...:   optional variables
  **/
 #define TRACE(LEVEL, COND, FMT, ...) \
-_TRACE(LEVEL, COND, FMT, __VA_ARGS__);
+_TRACE(LEVEL, COND, FMT, ##__VA_ARGS__);
 
 /** macro TRACE_WARN(LEVEL, COND, FMT, ...)
  *  logs format string FMT with optional variables to TRACE_SYMBOL_STDERR
@@ -85,7 +85,7 @@ _TRACE(LEVEL, COND, FMT, __VA_ARGS__);
  *  ...:   optional variables
  **/
 #define TRACE_WARN(LEVEL, COND, FMT, ...) \
-_TRACE_WARN(LEVEL, COND, FMT, __VA_ARGS__);
+_TRACE_WARN(LEVEL, COND, FMT, ##__VA_ARGS__);
 
 /** macro TRACE_ERROR(LEVEL, COND, FMT, ...)
  *  logs format string FMT with optional variables to TRACE_SYMBOL_STDERR,
@@ -97,7 +97,7 @@ _TRACE_WARN(LEVEL, COND, FMT, __VA_ARGS__);
  *  ...:   optional variables
  **/
 #define TRACE_ERROR(LEVEL, COND, FMT, ...) \
-_TRACE_ERROR(LEVEL, COND, FMT, __VA_ARGS__);
+_TRACE_ERROR(LEVEL, COND, FMT, ##__VA_ARGS__);
 
 /** macro TRACE_FATAL(LEVEL, COND, FMT, ...)
  *  logs format string FMT with optional variables to TRACE_SYMBOL_STDERR,
@@ -109,7 +109,7 @@ _TRACE_ERROR(LEVEL, COND, FMT, __VA_ARGS__);
  *  ...:   optional variables
  **/
 #define TRACE_FATAL(LEVEL, COND, FMT, ...) \
-_TRACE_FATAL(LEVEL, COND, FMT, __VA_ARGS__);
+_TRACE_FATAL(LEVEL, COND, FMT, ##__VA_ARGS__);
 
 /** macro TRACE_BOUND(LEVEL, COND, VAR, MIN, MAX)
  *  logs variable VAR in its boundaries MIN <= VAR < MAX to TRACE_SYMBOL_STDOUT
@@ -407,7 +407,7 @@ _trace_severity(const char* overrides, const char *identifier) {
 
 
 #define __PRINT(FD, FMT, ...) \
-TRACE_SYMBOL_FPRINTF(FD, FMT __VA_OPT__(,) __VA_ARGS__);
+TRACE_SYMBOL_FPRINTF(FD, FMT, ##__VA_ARGS__);
 
 #define __FLUSH() \
 TRACE_SYMBOL_FFLUSH(TRACE_SYMBOL_STDOUT); \
@@ -423,7 +423,7 @@ __PREAMBLE(FD, LEVEL, "ABORT")
 
 #define __ABORT(LEVEL, FMT, ...) \
 __PREAMBLE_ABORT(TRACE_SYMBOL_STDERR, LEVEL) \
-__PRINT(TRACE_SYMBOL_STDERR, FMT, __VA_ARGS__) \
+__PRINT(TRACE_SYMBOL_STDERR, FMT, ##__VA_ARGS__) \
 TRACE_SYMBOL_ABORT();
 
 #define __PREAMBLE_WARN(FD, LEVEL) \
@@ -431,7 +431,7 @@ __PREAMBLE(FD, LEVEL, "WARNING")
 
 #define __WARN(LEVEL, FMT, ...) \
 __PREAMBLE_WARN(TRACE_SYMBOL_STDERR, LEVEL) \
-__PRINT(TRACE_SYMBOL_STDERR, FMT, __VA_ARGS__) \
+__PRINT(TRACE_SYMBOL_STDERR, FMT, ##__VA_ARGS__) \
 __FLUSH()
 
 #define __PREAMBLE_ERROR(FD, LEVEL) \
@@ -439,7 +439,7 @@ __PREAMBLE(FD, LEVEL, "ERROR")
 
 #define __ERROR(LEVEL, FMT, ...) \
 __PREAMBLE_ERROR(TRACE_SYMBOL_STDERR, LEVEL) \
-__PRINT(TRACE_SYMBOL_STDERR, FMT, __VA_ARGS__) \
+__PRINT(TRACE_SYMBOL_STDERR, FMT, ##__VA_ARGS__) \
 __FLUSH()
 
 #define __PREAMBLE_FATAL(FD, LEVEL) \
@@ -447,7 +447,7 @@ __PREAMBLE(FD, LEVEL, "FATAL")
 
 #define __FATAL(LEVEL, FMT, ...) \
 __PREAMBLE_FATAL(TRACE_SYMBOL_STDERR, LEVEL) \
-__PRINT(TRACE_SYMBOL_STDERR, FMT, __VA_ARGS__) \
+__PRINT(TRACE_SYMBOL_STDERR, FMT, ##__VA_ARGS__) \
 __FLUSH() \
 __ABORT(LEVEL, "aborting in function %s", __FUNCTION__)
 
@@ -472,16 +472,25 @@ __PRINT_VAR(TRACE_SYMBOL_STDOUT, VAR, FMT)
 
 #define __PRINT_ARRAY2D(FD, LEVEL, PREFIX, VAR, ELEMENT, NUM_Y, NUM_X, FMT) \
 { \
-    __VAR(LEVEL, PREFIX, VAR, "%p [\n") \
+    __PREAMBLE(FD, LEVEL, PREFIX) \
+    __PRINT(FD, STR(VAR) ": %p [\n", VAR) \
     for (int y = 0; y < (NUM_Y); y++) { \
-        __VAR( LEVEL, PREFIX, &(VAR)[y*(NUM_X)], "%p  ") \
-        __PRINT_ARRAY(FD, (&(VAR)[y*(NUM_X)]), ELEMENT, NUM_X, FMT) \
+        __PREAMBLE(FD, LEVEL, PREFIX) \
+        __PRINT(FD, STR(VAR) ": %p  [", &(VAR)[y*(NUM_X)]) \
+        for (int x = 0; x < (NUM_X); x++) { \
+            __PRINT(FD, FMT, VAR[y*(NUM_X)+x]ELEMENT) \
+            if (x < (NUM_X)-1) { \
+                __PRINT(FD, ",") \
+            } \
+        } \
+        __PRINT(FD, "]") \
         if (y < (NUM_Y)-1) { \
             __PRINT(FD, ",\n") \
         } \
     } \
     __PRINT(FD, "\n") \
-    __VAR(LEVEL, PREFIX, (&(VAR)[(NUM_Y)*(NUM_X)]), "%p ]\n") \
+    __PREAMBLE(FD, LEVEL, PREFIX) \
+    __PRINT(FD, STR(VAR) ": %p ]\n", &(VAR)[(NUM_Y)*(NUM_X)]) \
 }
 
 #define __PRINT_BOUND(FD, VAR, MIN, MAX, FMT) \
@@ -493,7 +502,7 @@ __PRINT(FD, \
 #define _TRACE(LEVEL, COND, FMT, ...) \
 if (__TRACE_COND(LEVEL) && (COND)) { \
     __PREAMBLE(TRACE_SYMBOL_STDOUT, LEVEL, "TRACE") \
-    __PRINT(TRACE_SYMBOL_STDOUT, FMT "\n", __VA_ARGS__) \
+    __PRINT(TRACE_SYMBOL_STDOUT, FMT "\n", ##__VA_ARGS__) \
 }
 
 #define _TRACE_VAR(LEVEL, COND, VAR, FMT) \
@@ -560,17 +569,17 @@ if (__TRACE_COND(LEVEL)) { \
 
 #define _TRACE_WARN(LEVEL, COND, FMT, ...)  \
 if (__TRACE_COND(LEVEL) && (COND)) { \
-    __WARN(LEVEL, FMT "\n", __VA_ARGS__) \
+    __WARN(LEVEL, FMT "\n", ##__VA_ARGS__) \
 }
 
 #define _TRACE_ERROR(LEVEL, COND, FMT, ...) \
 if (__TRACE_COND(LEVEL) && (COND)) { \
-    __ERROR(LEVEL, FMT "\n", __VA_ARGS__) \
+    __ERROR(LEVEL, FMT "\n", ##__VA_ARGS__) \
 }
 
 #define _TRACE_FATAL(LEVEL, COND, FMT, ...) \
 if (__TRACE_COND(LEVEL) && (COND)) { \
-    __FATAL(LEVEL, FMT "\n", __VA_ARGS__) \
+    __FATAL(LEVEL, FMT "\n", ##__VA_ARGS__) \
 }
 
 #define __BOUND(LEVEL, PREFIX, VAR, MIN, MAX, FMT) \
@@ -710,8 +719,8 @@ if (COND) { \
         __VAR(LEVEL, "ATTRIBUTE", ATTR->i, "               % " PRId64 "\n") \
         __VAR(LEVEL, "ATTRIBUTE", ATTR->has_s, "           %d\n") \
         __VAR(LEVEL, "ATTRIBUTE", ATTR->s.len, "           %zu\n") \
-        __VAR(LEVEL, "ATTRIBUTE", ATTR->s.data, "          %p\n") \
-        __VAR(LEVEL, "ATTRIBUTE", ATTR->s.data, "          \"%s\"\n") \
+        __VAR(LEVEL, "ATTRIBUTE", ATTR->s.data, "          %p ") \
+        __PRINT(TRACE_SYMBOL_STDOUT, "\"%.*s\"\n", (int)ATTR->s.len, ATTR->s.data) \
         __VAR(LEVEL, "ATTRIBUTE", ATTR->t, "               %p\n") \
         __VAR(LEVEL, "ATTRIBUTE", ATTR->g, "               %p\n") \
         __VAR(LEVEL, "ATTRIBUTE", ATTR->sparse_tensor, "   %p\n") \
@@ -733,11 +742,17 @@ if (COND) { \
         __PRINT(TRACE_SYMBOL_STDOUT, "\n") \
         __VAR(LEVEL, "ATTRIBUTE", ATTR->n_strings, "       %zu\n") \
         __VAR(LEVEL, "ATTRIBUTE", ATTR->strings, "         %p ") \
-        __PRINT_ARRAY(TRACE_SYMBOL_STDOUT, \
-                      ATTR->strings, \
-                      .data, \
-                      ATTR->n_strings, \
-                      "\"%s\"") \
+        { \
+            __PRINT(TRACE_SYMBOL_STDOUT, "[") \
+            for (int i = 0; i < (ATTR)->n_strings; i++) { \
+                __PRINT(TRACE_SYMBOL_STDOUT, "\"%.*s\"", \
+                        (int)ATTR->strings[i].len, ATTR->strings[i].data) \
+                if (i < (ATTR)->n_strings-1) { \
+                    __PRINT(TRACE_SYMBOL_STDOUT, ",") \
+                } \
+            } \
+            __PRINT(TRACE_SYMBOL_STDOUT, "]") \
+        } \
         __PRINT(TRACE_SYMBOL_STDOUT, "\n") \
         __VAR(LEVEL, "ATTRIBUTE", ATTR->n_tensors, "       %zu\n") \
         __VAR(LEVEL, "ATTRIBUTE", ATTR->tensors, "         %p ") \
