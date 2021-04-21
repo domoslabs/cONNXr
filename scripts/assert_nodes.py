@@ -12,6 +12,7 @@ from skl2onnx.helpers.onnx_helper import select_model_inputs_outputs
 from skl2onnx.helpers.onnx_helper import save_onnx_model
 from skl2onnx.helpers.onnx_helper import enumerate_model_node_outputs
 from skl2onnx.helpers.onnx_helper import load_onnx_model
+import pandas as pd
 """
     file:        assert_nodes.py
 
@@ -22,16 +23,16 @@ from skl2onnx.helpers.onnx_helper import load_onnx_model
     Under development
 """
 
-test_data_dir = 'test/mobilenetv2-1.0/test_data_set_0'
-model_path = 'test/mobilenetv2-1.0/mobilenetv2-1.0.onnx'
-input_name = "data"
+test_data_dir = "test/domos"#'test/mobilenetv2-1.0/test_data_set_0'
+model_path = 'test/domos/broadcom_small.onnx'#'test/mobilenetv2-1.0/mobilenetv2-1.0.onnx'
+input_name = 'data'
 
 inputs = []
-inputs_num = len(glob.glob(os.path.join(test_data_dir, 'input_*.pb')))
+inputs_num = 1#len(glob.glob(os.path.join(test_data_dir, 'input_*.pb')))
 print("inputs_num", inputs_num)
 
 for i in range(inputs_num):
-    input_file = os.path.join(test_data_dir, 'input_{}.pb'.format(i))
+    input_file = os.path.join(test_data_dir, "tensor_for_test.pb")
     tensor = onnx.TensorProto()
     with open(input_file, 'rb') as f:
         tensor.ParseFromString(f.read())
@@ -46,7 +47,7 @@ inputDict = {
 }
 
 # hardcoded for mobilenetv2
-inputDict['data'] = inputDict['data'].reshape((1, 3, 224, 224))
+inputDict[input_name] = inputDict[input_name].reshape((1, 9, 50))
 
 
 def get_node_output(model_path, input_tensor, output_name):
@@ -54,10 +55,14 @@ def get_node_output(model_path, input_tensor, output_name):
     model_onnx = load_onnx_model(model_path)
     num_onnx = select_model_inputs_outputs(model_onnx, output_name)
     save_onnx_model(num_onnx, temp_file)
+    test_onnx = load_onnx_model(temp_file)
+    for node in test_onnx.graph.node:
+        print(node.name)
     ses_opt = SessionOptions()
     # avoid warnings
     ses_opt.log_severity_level = 4
     sess = rt.InferenceSession(temp_file, sess_options=ses_opt)
+    input_tensor = {sess.get_inputs()[0].name: input_tensor['data']}
     out_tensor = sess.run(None, input_tensor)
     os.remove(temp_file)
     return out_tensor[0]
@@ -93,6 +98,15 @@ with open("dump.txt", 'r') as dump_file:
         print("Input tensor shape:", shape, "Expected tensor shape:", expected_tensor_np.shape)
 
         error = False
+        
+        expected_tensor_df = pd.DataFrame(expected_tensor).T
+        shape_df = pd.DataFrame(expected_tensor_np.shape).T
+        if index==0:
+            shape_df.to_csv('onnx_dump.csv',header=False, index=False)
+            expected_tensor_df.to_csv('onnx_dump.csv',mode='a',header=False, index=False)
+        else:
+            shape_df.to_csv('onnx_dump.csv',mode='a',header=False, index=False)
+            expected_tensor_df.to_csv('onnx_dump.csv', mode='a',header=False, index=False)
         for i in range(n_values_to_assert):
             if (tensor[i] - expected_tensor[i]) > 0.001:
                 print("Error", tensor[i], expected_tensor[i])
