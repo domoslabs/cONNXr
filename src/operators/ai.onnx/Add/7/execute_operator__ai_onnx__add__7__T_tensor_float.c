@@ -44,7 +44,9 @@ execute_operator__ai_onnx__add__7__T_tensor_float(
                     o_C->float_data[i] = i_A->float_data[i%3] + i_B->float_data[i];
                 /* TODO Hardcoded for MNIST */
                 } else {
-                    o_C->float_data[i] = i_A->float_data[i] + i_B->float_data[i/(i_A->dims[2]*i_A->dims[3])];
+                    //o_C->float_data[i] = i_A->float_data[i] + i_B->float_data[i/(i_A->dims[2]*i_A->dims[3])];
+                    //Hardcoded as well... :s
+                    o_C->float_data[i] = i_A->float_data[i] + i_B->float_data[i];
                 }
             }
         }
