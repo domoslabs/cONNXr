@@ -51,7 +51,14 @@ execute_operator__ai_onnx__batchnormalization__9__T_tensor_float(
 
     for (int i = 0; i < o_Y->n_float_data; i++) {
         TRACE_BOUND(3, true, i, 0, (int)o_Y->n_float_data, "%d");
-        int index = (i/(i_X->dims[2] * i_X->dims[3])) % i_X->dims[1];
+        int index;
+        if (i_X->n_dims == 3) {
+            index = (i/(i_X->dims[2])) % i_X->dims[1];
+        }
+        else {
+            index = (i/(i_X->dims[2] * i_X->dims[3])) % i_X->dims[1];
+        }
+        
         TRACE_VAR(3, true, i_X->float_data[i], "%f");
         TRACE_VAR(3, true, index, "%d");
         TRACE_VAR(3, true, i_mean->float_data[index], "%f");
