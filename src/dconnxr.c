@@ -28,7 +28,7 @@ int main(int argc, char **argv){
   //   return 1;
   // }
 
-  cmdoptions opts;
+  cmdoptions opts = {0};
   if (parse_options(&opts, argc, argv)!=0) {
     fprintf(stderr, "Exiting!\n");
     return 1;
@@ -151,6 +151,7 @@ int main(int argc, char **argv){
   int buff_len = 4096;
   char buffer[buff_len];
   int index_of_mac=0;
+  int row_c = 0;
   while(fgets(buffer, buff_len, csv)) {
     if(counter == 0) {
       header_fields = csv_split_line(buffer, fpingdq_splitted_header, MAX_FIELDS);
@@ -171,13 +172,15 @@ int main(int argc, char **argv){
           continue;
         }
       }
-      csv_to_model_vector(
-        fpingdq_splitted_header, header_fields,
-        feature_field_names, feature_fields,
-        tmp_splitted_csv, csvlen,
-        &(input2->float_data[row_len*(counter-1) + 0])
-      );
+      float * floatdata =  input2->float_data;
+      for(int i = 0; i < feature_fields; i++) {
+        int index = i*cols + row_c;
+        floatdata[index] = csv_get_float_from_name(
+        fpingdq_splitted_header, header_fields, feature_field_names[i],
+        tmp_splitted_csv, csvlen);
+      }
       // &(input2->float_data[row_len*colidx + 0]) = (float)row->chanim.tx;
+      row_c++;
       counter++;
       if(counter > cols){
         break;
@@ -185,17 +188,7 @@ int main(int argc, char **argv){
     }
   }
   fclose(csv);
-
-  printf("first and second row of input:\n");
-  // print first and second row...
-  for (int i = 0; i < row_len; i++)
-    printf(" %02f", input2->float_data[row_len*0 + i]);
-  printf("\n");
-  for (int i = 0; i < row_len; i++)
-    printf(" %2f", input2->float_data[row_len*1 + i]);
   
-  printf("\n");
-
   if (counter<cols) {
     fprintf(stderr, "not enough lines in the csv file\n");
     return 1;
